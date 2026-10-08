@@ -40,7 +40,13 @@ aside label{display:block;font-size:.78rem;letter-spacing:.06em;text-transform:u
 .save{width:100%;margin-top:16px;padding:11px 8px}
 #saved{margin-top:8px;font-size:.82rem;color:#3d7a3d;min-height:1.2em}
 button.go:disabled{opacity:.55;cursor:wait}
-aside input{width:100%;padding:9px 10px;border:1px solid var(--ligne);border-radius:5px;font:inherit;background:#fff}
+aside input[type="text"], aside input[type="email"]{width:100%;padding:9px 10px;border:1px solid var(--ligne);border-radius:5px;font:inherit;background:#fff}
+.check-row{display:flex;align-items:flex-start;gap:8px;margin:12px 0 6px;cursor:pointer;font-size:.82rem;color:var(--cacao2)}
+.check-row input{margin-top:2px}
+.consent-box{font-size:.78rem;line-height:1.35;margin-top:14px;padding:8px;background:rgba(184,137,59,.08);border:1px solid var(--ligne);border-radius:4px}
+.erase-btn{width:100%;margin-top:10px;padding:8px;background:transparent;border:1px solid #d4a5a5;color:#8a2839;border-radius:6px;font:inherit;font-size:.8rem;cursor:pointer}
+.erase-btn:hover{background:#faeaea}
+.legal-box{margin-top:16px;padding-top:10px;border-top:1px solid var(--ligne);font-size:.73rem;color:#7a6657;line-height:1.4}
 </style>
 </head>
 <body>
@@ -59,13 +65,32 @@ aside input{width:100%;padding:9px 10px;border:1px solid var(--ligne);border-rad
  </section>
  <aside class="box">
   <h2>Pour mieux vous conseiller</h2>
-  <p>Ces informations nous aident à choisir le coffret idéal.</p>
-  <label for="name">Prénom et nom</label><input id="name">
-  <label for="email">Email</label><input id="email" type="email">
-  <label for="allergies">Allergies</label><input id="allergies" placeholder="ex. noisettes, gluten">
-  <label for="kids">Âge des enfants</label><input id="kids" placeholder="ex. 6, 9">
-  <button id="save" class="go save" type="button">Enregistrer mes informations</button>
+  <p>Ces informations facultatives nous aident à vous orienter.</p>
+  <label for="name">Prénom (facultatif)</label><input id="name" type="text" placeholder="ex. Camille">
+  <label for="email">Email (facultatif)</label><input id="email" type="email" placeholder="contact@exemple.fr">
+  <label for="allergies">Allergies éventuelles</label><input id="allergies" type="text" placeholder="ex. noisettes, gluten">
+  
+  <label class="check-row" for="kids_fam">
+    <input id="kids_fam" type="checkbox">
+    <span>Sélection adaptée à toute la famille / enfants</span>
+  </label>
+  <input id="kids" type="hidden">
+
+  <div class="consent-box">
+    <label class="check-row" for="consent" style="margin:0">
+      <input id="consent" type="checkbox" required>
+      <span><strong>Consentement RGPD :</strong> J'accepte que la Maison Delcourt traite mes données (dont allergies) pour cette recommandation.</span>
+    </label>
+  </div>
+
+  <button id="save" class="go save" type="button">Enregistrer mes préférences</button>
   <div id="saved"></div>
+
+  <button id="erase" class="erase-btn" type="button">🗑️ Effacer mes données (Droit à l'oubli)</button>
+
+  <div class="legal-box">
+    🔒 Vos données restent confidentielles et ne sont jamais transmises. Conformément au RGPD (Art. 17), vous pouvez les supprimer d'un clic ci-dessus à tout moment.
+  </div>
  </aside>
 </main>
 <script>
@@ -86,7 +111,10 @@ function welcome(){
 }
 async function post(path, payload){
   const r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload)});
-  if (!r.ok) throw new Error("HTTP " + r.status);
+  if (!r.ok) {
+    const err = await r.json().catch(() => ({}));
+    throw new Error(err.detail || ("HTTP " + r.status));
+  }
   return r.json();
 }
 async function send(text){
@@ -110,26 +138,65 @@ el("send").onsubmit = e => {
 };
 document.querySelectorAll(".chip").forEach(c => c.onclick = () => send(c.textContent));
 
-// Les informations ne partent qu'au clic sur le bouton
+// Enregistrement des préférences avec contrôle du consentement
 el("save").onclick = async () => {
+  if (el("allergies").value.trim() && !el("consent").checked) {
+    el("saved").style.color = "#a3243b";
+    el("saved").textContent = "⚠️ Veuillez cocher la case de consentement pour enregistrer vos allergies.";
+    el("consent").focus();
+    return;
+  }
   el("save").disabled = true;
   try {
-    await post("/profile", {session_id: sid, name: el("name").value, email: el("email").value,
-                            allergies: el("allergies").value, children_ages: el("kids").value});
-    el("saved").style.color = "#3d7a3d"; el("saved").textContent = "✓ Informations enregistrées";
+    const familyVal = el("kids_fam").checked ? "oui (sélection familiale)" : el("kids").value;
+    await post("/profile", {
+      session_id: sid,
+      name: el("name").value,
+      email: el("email").value,
+      allergies: el("allergies").value,
+      children_ages: familyVal,
+      family_friendly: el("kids_fam").checked,
+      consent_data: el("consent").checked
+    });
+    el("saved").style.color = "#3d7a3d";
+    el("saved").textContent = "✓ Informations enregistrées";
   } catch (e) {
-    el("saved").style.color = "#a3243b"; el("saved").textContent = "Échec de l'enregistrement";
+    el("saved").style.color = "#a3243b";
+    el("saved").textContent = e.message || "Échec de l'enregistrement";
   }
   el("save").disabled = false;
 };
+
+// Droit à l'effacement (RGPD Art. 17)
+el("erase").onclick = async () => {
+  if (!confirm("Voulez-vous supprimer l'ensemble de vos données de session et conversations ?")) return;
+  try {
+    await fetch("/profile/" + sid, {method: "DELETE"});
+    ids.forEach(id => el(id).value = "");
+    el("kids_fam").checked = false;
+    el("consent").checked = false;
+    el("saved").style.color = "#3d7a3d";
+    el("saved").textContent = "✓ Vos données ont été effacées.";
+    sid = localStorage.sid = crypto.randomUUID();
+    log.innerHTML = "";
+    welcome();
+  } catch (e) {
+    el("saved").style.color = "#a3243b";
+    el("saved").textContent = "Erreur lors de l'effacement";
+  }
+};
+
 ids.forEach(id => el(id).addEventListener("input", () => el("saved").textContent = ""));
 
 el("reset").onclick = () => {
   sid = localStorage.sid = crypto.randomUUID();
-  log.innerHTML = ""; ids.forEach(id => el(id).value = ""); el("saved").textContent = "";
+  log.innerHTML = ""; ids.forEach(id => el(id).value = "");
+  el("kids_fam").checked = false;
+  el("saved").textContent = "";
   welcome();
 };
 welcome();
 </script>
 </body>
 </html>
+
