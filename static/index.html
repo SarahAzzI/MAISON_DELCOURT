@@ -77,12 +77,12 @@ let busy = false;
 
 function add(text, who){
   const d = document.createElement("div"); d.className = "msg " + who;
-  d.innerHTML = '<div class="who">' + (who === "bot" ? "Clémence · Maison Delcourt" : "Vous") + "</div>";
+  d.innerHTML = '<div class="who">' + (who === "bot" ? "ChocoBot · Maison Delcourt" : "Vous") + "</div>";
   const t = document.createElement("div"); t.textContent = text; d.appendChild(t);
   log.appendChild(d); log.scrollTop = log.scrollHeight; return d;
 }
 function welcome(){
-  add("Bonjour, je suis Clémence, conseillère à la Maison Delcourt. Pour quelle occasion cherchez-vous des chocolats ?", "bot");
+  add("Bonjour, je suis ChocoBot, assistant virtuel de la Maison Delcourt. Pour quelle occasion cherchez-vous des chocolats ?", "bot");
 }
 async function post(path, payload){
   const r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload)});
