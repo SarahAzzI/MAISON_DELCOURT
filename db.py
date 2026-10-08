@@ -31,6 +31,22 @@ def get_customer(session_id):
     return dict(zip(["name", "email", "allergies", "children_ages"], row)) if row else {}
 
 
+def delete_session(session_id):
+    """Supprime les données d'un client et ses messages associés (RGPD Art. 17)."""
+    conn.execute("DELETE FROM customers WHERE session_id=?", (session_id,))
+    conn.execute("DELETE FROM messages WHERE session_id=?", (session_id,))
+    conn.commit()
+    return True
+
+
+def purge_old_sessions(max_age_seconds=30 * 86400):
+    """Purge les sessions inactives depuis plus de max_age_seconds (défaut : 30 jours)."""
+    threshold = time.time() - max_age_seconds
+    conn.execute("DELETE FROM customers WHERE created_at < ?", (threshold,))
+    conn.execute("DELETE FROM messages WHERE created_at < ?", (threshold,))
+    conn.commit()
+
+
 def save_message(session_id, role, content):
     conn.execute("INSERT INTO messages (session_id, role, content, created_at) VALUES (?,?,?,?)",
                  (session_id, role, content, time.time()))

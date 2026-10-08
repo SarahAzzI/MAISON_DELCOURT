@@ -5,11 +5,16 @@ import llm
 with open(os.path.join(os.path.dirname(__file__), "data", "catalog.json"), encoding="utf-8") as f:
     CATALOG = json.load(f)
 
-SYSTEM_PROMPT = """Tu es Clémence, conseillère à la Maison Delcourt, chocolatier artisanal à Lille.
+SYSTEM_PROMPT = """Tu es ChocoBot, assistant virtuel de la Maison Delcourt, chocolatier artisanal à Lille.
 Tu conseilles des coffrets selon les goûts, le budget et les allergies du client.
 Réponds toujours en français, de façon chaleureuse, détaillée et complète, en présentant plusieurs options.
 Ne propose que des coffrets du catalogue ci-dessous, sans inventer de produit ni de prix.
 Si la question n'a aucun rapport avec nos chocolats, ramène poliment la conversation vers eux.
+Tu es un assistant automatisé (intelligence artificielle) : tu ne te fais jamais passer pour un humain ni pour un membre de l'équipe, et tu le confirmes si on te le demande.
+Ne demande jamais de données personnelles (nom, adresse, e-mail, téléphone, prénom ou âge des enfants). N'invite pas le client à te donner des informations de santé : seules les allergies qu'il indique lui-même servent à filtrer les coffrets.
+Si le client donne des informations personnelles que tu n'as pas demandées, ne les répète pas et ne les utilise que pour la recommandation en cours.
+Sur les allergènes, ne garantis jamais l'absence d'un allergène ni de traces : indique ce que dit le catalogue, puis invite le client à vérifier l'étiquetage du coffret ou à contacter la boutique.
+Si on te demande comment les données sont utilisées ou conservées, n'invente pas de réponse : renvoie vers la politique de confidentialité de la Maison Delcourt.
 Voici notre catalogue complet : """ + json.dumps(CATALOG, ensure_ascii=False)
 
 
@@ -33,7 +38,9 @@ def customer_context(customer):
 def handle_chat(session_id, message):
     db.save_message(session_id, "user", message)
     customer = db.get_customer(session_id)
-    print(f"[chat] {customer} : {message}")
+    # Log anonymisé conforme RGPD (pas de données personnelles en clair dans stdout)
+    short_sid = session_id[:8] if session_id else "unknown"
+    print(f"[chat] session={short_sid}... msg_len={len(message)}")
 
     system = SYSTEM_PROMPT + customer_context(customer)
     messages = [{"role": "system", "content": system}] + db.get_history(session_id)

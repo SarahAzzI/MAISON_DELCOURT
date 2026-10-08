@@ -1,0 +1,29 @@
+{
+  "project_name": "chocobot-baseline",
+  "nb_runs": 3,
+  "messages_par_run": 25,
+  "runs_timestamps": [
+    "2026-10-08T12:26:44",
+    "2026-10-08T13:22:51",
+    "2026-10-08T13:36:21"
+  ],
+  "codecarbon_version": "3.3.1",
+  "machine": "Apple M4",
+  "pays": "France",
+  "duration_s": {
+    "moyenne": 140.07157352766566,
+    "min": 139.88333166600205,
+    "max": 140.31121666700346
+  },
+  "energy_kwh": {
+    "moyenne": 0.0004619632326614258,
+    "min": 0.0004592652557384169,
+    "max": 0.00046628400498986504
+  },
+  "emissions_kg": {
+    "moyenne": 2.5887957595113642e-05,
+    "min": 2.5736765666325148e-05,
+    "max": 2.613008935562705e-05
+  },
+  "mg_co2eq_par_message": 1.0355183038045457
+}
