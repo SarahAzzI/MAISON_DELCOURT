@@ -80,27 +80,65 @@ Le tableau de bord est accessible sur **http://localhost:6006**.
 
 ## Mesurer et évaluer (Performances & Empreinte Carbone)
 
-### 1. Simuler du trafic et mesurer l'empreinte carbone (CodeCarbon)
+## 1 Mesure de l'empreinte carbone (CodeCarbon)
 
-`python load_test.py 2` simule 2 conversations (10 messages) avec une phase d'échauffement préalable :
+L'empreinte carbone de ChocoBot est mesurée avec [CodeCarbon](https://codecarbon.io) (v3.3.1) pendant un scénario de test reproductible.
+
+### Principe
+
+`load_test.py` rejoue des conversations types contre le serveur et entoure l'ensemble d'un `EmissionsTracker`. Il en tire l'énergie consommée (kWh) et les émissions (kg CO₂eq), au total et par message. Chaque run ajoute une ligne à `data/emissions.csv`.
+
+### Prérequis
+
+- Environnement virtuel activé et dépendances installées (`pip install -r requirements.txt`)
+- Ollama lancé avec le modèle `llama3.2:3b`
+- Serveur ChocoBot lancé sur le port 8000
+- Applications lourdes fermées : CodeCarbon mesure toute la machine
+
+### Lancer une mesure
+
 ```bash
-python load_test.py 2
+python load_test.py 5
 ```
-Ce script :
-- Mesure le temps d'exécution et la latence.
-- Calcule automatiquement la consommation électrique et les émissions carbone grâce à **CodeCarbon**.
-- Enregistre chaque exécution dans `data/emissions.csv` (durée, puissance CPU/RAM/GPU, kWh consommés, kg CO2eq).
-- Affiche dans la console les émissions totales et moyennes par message (en g CO2eq).
 
-### 2. Visualiser le dashboard CodeCarbon
+5 conversations de 5 messages, soit 25 messages. Un message d'échauffement est envoyé avant le tracker pour exclure le chargement du modèle en mémoire. Faire 3 runs dans les mêmes conditions.
 
-Pour explorer visuellement l'historique des émissions généré dans `data/emissions.csv` :
+### Résumer une série
+
 ```bash
-carbonboard --filepath data/emissions.csv --port 8050
+python summarize_emissions.py chocobot-baseline 25 3
 ```
-Le tableau de bord interactif s'ouvre sur **http://localhost:8050**.
 
-### 3. Analyser les traces LLM (Arize Phoenix)
+Arguments : nom du projet CodeCarbon, messages par run, nombre de derniers runs à agréger. Le résultat est enregistré dans `data/summary_chocobot-baseline.json`.
+
+Pour mesurer une version optimisée, changer `project_name` dans `load_test.py` (par exemple `chocobot-optimise`) et relancer avec le même protocole.
+
+### Résultats de l'état initial
+
+| Indicateur | Valeur (moyenne de 3 runs de 25 messages) |
+|---|---|
+| Durée par run | environ 140 s |
+| Énergie par run | environ 0,46 Wh |
+| Émissions par run | environ 0,026 g CO₂eq |
+| Émissions par message | environ 1,04 mg CO₂eq |
+
+Les 3 runs sont très proches (écart d'environ 0,3 % sur la durée et 1,5 % sur les émissions).
+
+### Limites de la mesure
+
+- Sur Mac, sans droits administrateur, CodeCarbon estime la puissance du processeur (à peu près constante) et ne compte pas le GPU : le chiffre absolu est probablement sous-estimé.
+- Conséquence : les gains mesurés reflètent surtout le temps de calcul économisé.
+- Périmètre : modèle local (`llama3.2:3b`) sur un MacBook Apple M4 (16 Go), pas un serveur distant.
+- L'avant/après reste comparable tant que le protocole est identique.
+
+### Fichiers
+
+- `data/emissions.csv` : mesures brutes, une ligne par run
+- `data/summary_<projet>.json` : résumé d'une série
+- `load_test.py` : scénario et mesure
+- `summarize_emissions.py` : agrégation des runs
+
+### 2. Analyser les traces LLM (Arize Phoenix)
 
 Lorsque le serveur Phoenix est lancé (`phoenix serve`), rendez-vous sur **http://localhost:6006** (ou cliquez sur le bouton dans le back-office `/admin`). Vous pouvez inspecter :
 - Le détail de chaque appel LLM (prompt système, prompt utilisateur, réponse).
