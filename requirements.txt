@@ -2,3 +2,5 @@ fastapi==0.115.*
 uvicorn[standard]==0.32.*
 openai>=1.40
 python-dotenv>=1.0
+arize-phoenix
+openinference-instrumentation-openai

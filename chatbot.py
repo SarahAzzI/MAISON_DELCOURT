@@ -40,8 +40,15 @@ def handle_chat(session_id, message):
 
     try:
         reply, usage = llm.chat(llm.BIG_MODEL, messages, max_tokens=1500)
-    except Exception:
+        p_tokens = usage.get("prompt_tokens", 0)
+        c_tokens = usage.get("completion_tokens", 0)
+        t_tokens = usage.get("total_tokens", p_tokens + c_tokens)
+        lat = usage.get("latency_seconds", 0.0)
+        db.save_metric(session_id, llm.BIG_MODEL, p_tokens, c_tokens, t_tokens, lat, status="ok")
+    except Exception as e:
         reply = "Désolé, une erreur est survenue. Réessayez plus tard."
+        db.save_metric(session_id, llm.BIG_MODEL, 0, 0, 0, 0.0, status="error", error=str(e))
 
     db.save_message(session_id, "assistant", reply)
     return {"reply": reply}
+

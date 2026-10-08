@@ -27,13 +27,20 @@ small{color:#7a6657}
   <div class="stat"><b id="nc">–</b>clients</div>
   <div class="stat"><b id="nm">–</b>messages (200 derniers)</div>
   <div class="stat"><b id="mode">–</b>modèle LLM (Ollama)</div>
-  <div class="stat"><b>non suivi</b>tokens / coût / erreurs</div>
+  <div class="stat"><b id="ntok">–</b>tokens consommés</div>
+  <div class="stat"><b id="nlat">–</b>latence moy.</div>
+  <div class="stat"><b id="nerr">–</b>erreurs LLM</div>
+  <a href="http://localhost:6006" target="_blank" class="stat" style="text-decoration:none;color:inherit;border-color:#b8893b;background:#faf3e4">
+   <b style="color:#b8893b;font-size:1.2rem">Arize Phoenix ↗</b>dashboard traces & evals
+  </a>
  </div>
  <h2>Clients</h2>
  <div class="wrap"><table id="tc"></table></div>
  <h2>Conversations</h2>
  <div class="wrap"><table id="tm"></table></div>
- <p><small>Base SQLite : fichier <code>chocobot.db</code> à la racine du projet.</small></p>
+ <h2>Dernières Métriques LLM</h2>
+ <div class="wrap"><table id="tk"></table></div>
+ <p><small>Base SQLite : fichier <code>chocobot.db</code> à la racine du projet · Dashboard Phoenix sur <code>http://localhost:6006</code></small></p>
 </main>
 <script>
 const fmt = t => new Date(t * 1000).toLocaleString("fr-FR");
@@ -49,8 +56,16 @@ fetch("/admin/data").then(r => r.json()).then(d => {
   document.getElementById("nc").textContent = d.customers.length;
   document.getElementById("nm").textContent = d.messages.length;
   document.getElementById("mode").textContent = d.llm.big;
+  if (d.stats) {
+    document.getElementById("ntok").textContent = d.stats.total_tokens.toLocaleString("fr-FR");
+    document.getElementById("nlat").textContent = d.stats.avg_latency + " s";
+    document.getElementById("nerr").textContent = d.stats.errors_count;
+  }
   table(document.getElementById("tc"), [["created_at","Date"],["name","Nom"],["email","Email"],["allergies","Allergies"],["children_ages","Enfants"],["session_id","Session"]], d.customers);
   table(document.getElementById("tm"), [["created_at","Date"],["session_id","Session"],["role","Rôle"],["content","Message"]], d.messages);
+  if (d.metrics && document.getElementById("tk")) {
+    table(document.getElementById("tk"), [["created_at","Date"],["session_id","Session"],["model","Modèle"],["total_tokens","Tokens"],["latency_seconds","Latence (s)"],["status","Statut"]], d.metrics);
+  }
 });
 </script>
 </body>
