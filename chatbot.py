@@ -38,7 +38,9 @@ def customer_context(customer):
 def handle_chat(session_id, message):
     db.save_message(session_id, "user", message)
     customer = db.get_customer(session_id)
-    print(f"[chat] {customer} : {message}")
+    # Log anonymisé conforme RGPD (pas de données personnelles en clair dans stdout)
+    short_sid = session_id[:8] if session_id else "unknown"
+    print(f"[chat] session={short_sid}... msg_len={len(message)}")
 
     system = SYSTEM_PROMPT + customer_context(customer)
     messages = [{"role": "system", "content": system}] + db.get_history(session_id)

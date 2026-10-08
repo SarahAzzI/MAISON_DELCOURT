@@ -158,6 +158,7 @@ réglages), décommentez les lignes voulues, puis relancez `uvicorn`.
 - `llm.py` : appel au modèle (Ollama) et instrumentation Phoenix
 - `db.py` : stockage SQLite (clients, messages, métriques)
 - `static/` : page de chat et back-office
+- `docs/` : documentations détaillées ([index](docs/README.md), audit, monitoring, RGPD, CodeCarbon)
 - `data/catalog.json` : catalogue des coffrets
 - `data/emissions.csv` : historique des émissions mesurées par CodeCarbon
 - `check_llm.py` : test de connexion au modèle
