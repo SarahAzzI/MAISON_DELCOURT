@@ -52,25 +52,61 @@ S'il affiche une erreur, vérifiez qu'Ollama est lancé (icône de lama près de
 ## 2. Lancer le projet (à chaque fois)
 
 Dans le dossier du projet :
-```
+```bash
 .venv\Scripts\activate          (Linux / Mac : source .venv/bin/activate)
 uvicorn app:app --reload
 ```
 Arrêter le serveur : Ctrl+C. Ollama doit rester lancé en arrière-plan.
 
+### Lancer Arize Phoenix (Monitoring et traçage LLM)
+
+Pour capturer et visualiser les traces OpenTelemetry, la latence et les tokens en temps réel, lancez le serveur Phoenix dans un terminal séparé :
+```bash
+.venv\Scripts\activate          (Linux / Mac : source .venv/bin/activate)
+phoenix serve
+```
+Le tableau de bord est accessible sur **http://localhost:6006**.
+
 ## Où voir quoi
 
 - **Le chatbot** : http://localhost:8000
-- **Le back-office de la Maison Delcourt** (clients et conversations) : http://localhost:8000/admin
+- **Le back-office de la Maison Delcourt** (clients, conversations et métriques LLM) : http://localhost:8000/admin
+- **Le dashboard Arize Phoenix** (traces complètes, latences, tokens, evals) : http://localhost:6006
 - **La documentation de l'API** : http://localhost:8000/docs
 - **La base de données** : le fichier `chocobot.db`, créé au premier message, dans le dossier où vous lancez `uvicorn`.
-  Ouvrez-le avec [DB Browser for SQLite](https://sqlitebrowser.org/) (ou `sqlite3 chocobot.db`). Tables : `customers`, `messages`.
+  Ouvrez-le avec [DB Browser for SQLite](https://sqlitebrowser.org/) (ou `sqlite3 chocobot.db`). Tables : `customers`, `messages`, `llm_metrics`.
   Pour repartir de zéro, arrêtez le serveur et supprimez ce fichier.
+- **Les données d'émissions carbone** : le fichier `data/emissions.csv` généré par CodeCarbon.
 
-## Mesurer
+## Mesurer et évaluer (Performances & Empreinte Carbone)
 
-`python load_test.py 2` simule 2 conversations (10 messages), avec de nouvelles sessions à chaque lancement :
-pratique pour mesurer l'état avant/après. Chaque message prend plusieurs secondes : commencez petit.
+### 1. Simuler du trafic et mesurer l'empreinte carbone (CodeCarbon)
+
+`python load_test.py 2` simule 2 conversations (10 messages) avec une phase d'échauffement préalable :
+```bash
+python load_test.py 2
+```
+Ce script :
+- Mesure le temps d'exécution et la latence.
+- Calcule automatiquement la consommation électrique et les émissions carbone grâce à **CodeCarbon**.
+- Enregistre chaque exécution dans `data/emissions.csv` (durée, puissance CPU/RAM/GPU, kWh consommés, kg CO2eq).
+- Affiche dans la console les émissions totales et moyennes par message (en g CO2eq).
+
+### 2. Visualiser le dashboard CodeCarbon
+
+Pour explorer visuellement l'historique des émissions généré dans `data/emissions.csv` :
+```bash
+carbonboard --filepath data/emissions.csv --port 8050
+```
+Le tableau de bord interactif s'ouvre sur **http://localhost:8050**.
+
+### 3. Analyser les traces LLM (Arize Phoenix)
+
+Lorsque le serveur Phoenix est lancé (`phoenix serve`), rendez-vous sur **http://localhost:6006** (ou cliquez sur le bouton dans le back-office `/admin`). Vous pouvez inspecter :
+- Le détail de chaque appel LLM (prompt système, prompt utilisateur, réponse).
+- La latence exacte par requête.
+- Le nombre de tokens consommés (prompt, complétion, total).
+- L'historique des sessions et des erreurs.
 
 ## Réglages facultatifs
 
@@ -81,9 +117,10 @@ réglages), décommentez les lignes voulues, puis relancez `uvicorn`.
 
 - `app.py` : API FastAPI
 - `chatbot.py` : logique de conversation
-- `llm.py` : appel au modèle (Ollama)
-- `db.py` : stockage SQLite
+- `llm.py` : appel au modèle (Ollama) et instrumentation Phoenix
+- `db.py` : stockage SQLite (clients, messages, métriques)
 - `static/` : page de chat et back-office
 - `data/catalog.json` : catalogue des coffrets
+- `data/emissions.csv` : historique des émissions mesurées par CodeCarbon
 - `check_llm.py` : test de connexion au modèle
-- `load_test.py` : série de messages pour mesurer
+- `load_test.py` : test de charge avec mesure d'émissions carbone (CodeCarbon)
