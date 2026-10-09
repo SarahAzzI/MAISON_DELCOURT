@@ -2,8 +2,9 @@ import os, random, time
 
 try:
     from dotenv import load_dotenv
-    load_dotenv()
+    load_dotenv(override=True)
 except ImportError:
+
     pass
 
 # Monitoring avec Arize Phoenix (serveur local sur http://localhost:6006)

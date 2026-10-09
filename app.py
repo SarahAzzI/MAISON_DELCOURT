@@ -1,15 +1,32 @@
-import os, secrets
-from fastapi import FastAPI, Depends, HTTPException, status
-from fastapi.responses import FileResponse
+import os, json, secrets
+from fastapi import FastAPI, Depends, HTTPException, status, Request
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from chatbot import handle_chat
 import db
 import llm
+import incidents
 
 app = FastAPI(title="ChocoBot - Maison Delcourt")
 app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Diagnostique et journalise l'incident 'Donnée corrompue'."""
+    incidents.record_incident(
+        "DONNEE_CORROMPUE",
+        f"Format de données invalide sur {request.url.path} : {exc.errors()}",
+        exc=exc
+    )
+    return JSONResponse(
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        content={"detail": "Données envoyées invalides ou corrompues.", "errors": exc.errors()}
+    )
+
 
 # Authentification d'administration (identifiants configurables via variables d'environnement)
 security = HTTPBasic()
@@ -84,9 +101,32 @@ def admin(_: str = Depends(verify_admin)):
 def admin_data(_: str = Depends(verify_admin)):
     data = db.get_all()
     data["llm"] = {"big": llm.BIG_MODEL, "small": llm.SMALL_MODEL}
+    # Récupération des logs récents d'incidents
+    try:
+        incidents_list = []
+        log_jsonl = os.path.join(os.path.dirname(__file__), "logs", "incidents.jsonl")
+        if os.path.exists(log_jsonl):
+            with open(log_jsonl, encoding="utf-8") as f:
+                incidents_list = [json.loads(line) for line in f if line.strip()][-20:]
+                incidents_list.reverse()
+        data["recent_incidents"] = incidents_list
+    except Exception:
+        data["recent_incidents"] = []
     return data
+
+
+@app.get("/admin/incidents")
+def get_incidents(_: str = Depends(verify_admin)):
+    """Consulte le journal des incidents supervisés (Sentry & local)."""
+    log_file = os.path.join(os.path.dirname(__file__), "logs", "incidents.jsonl")
+    if not os.path.exists(log_file):
+        return {"incidents": []}
+    with open(log_file, encoding="utf-8") as f:
+        items = [json.loads(line) for line in f if line.strip()]
+    return {"incidents": list(reversed(items[-50:]))}
 
 
 @app.get("/health")
 def health():
     return {"status": "ok"}
+

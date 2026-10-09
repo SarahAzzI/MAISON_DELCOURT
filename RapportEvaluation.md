@@ -2,7 +2,9 @@
 
 **Projet :** ChocoBot · Maison Delcourt  
 **Cadre :** Audit de conformité, sobriété numérique et gestion des incidents (Brief Noël)  
-**Outil d'observabilité :** Arize Phoenix (Traces OpenTelemetry) & Back-office local SQLite  
+**Outils d'évaluation :**
+* Observabilité & Traces LLM : **Arize Phoenix** (OpenTelemetry) & Back-office local SQLite
+* Mesure d'impact environnemental : **CodeCarbon (v3.3.1)**
 **Modèle testé :** `llama3.2:3b` via Ollama local  
 **Date de mesure :** 9 octobre 2026  
 
@@ -12,11 +14,13 @@
 
 Cette campagne d'évaluation établit la **ligne de base (baseline)** de l'assistant ChocoBot avant tout correctif. 
 
-Les mesures ont été réalisées via des tests unitaires manuels et un tir de charge standardisé reproductible ([load_test.py](file:///home/souhaib/Documents/proget_alternance/MAISON_DELCOURT/load_test.py)).
+Les mesures ont été réalisées via des tests unitaires manuels, un tir de charge standardisé reproductible ([load_test.py](file:///home/souhaib/Documents/proget_alternance/MAISON_DELCOURT/load_test.py)) et un suivi environnemental continu par CodeCarbon ([summarize_emissions.py](file:///home/souhaib/Documents/proget_alternance/MAISON_DELCOURT/summarize_emissions.py)).
 
 ### Indicateurs Clés de l'État Initial :
 * **Volume total analysé :** 56 messages (28 appels LLM).
-* **Consommation globale de tokens :** **38 499 tokens**.
+* **Consommation globale de tokens :** **38 499 tokens** (dont ~14 000 tokens pour un test de 10 messages).
+* **Consommation énergétique (25 msgs) :** **0,46 Wh** (0,00046 kWh).
+* **Émissions de gaz à effet de serre :** **1,04 mg CO₂eq / message** (soit ~0,026 g CO₂eq pour 25 messages).
 * **Latence moyenne constatée :** **2,56 secondes** (premier appel à froid : 9,61 s, moyenne en charge : 2,31 s).
 * **Taux d'appels redondants au gros modèle :** **100 %** (aucun système de cache, aucune délégation vers un modèle léger).
 * **Comportement face aux pannes :** Défaillance silencieuse côté infrastructure (absence de journalisation structurée, de Sentry et d'alertes).
@@ -35,7 +39,7 @@ Les mesures ont été réalisées via des tests unitaires manuels et un tir de c
    Sur le message de commande finale : *"Merci, je prends le coffret sans noix !"*, le modèle répond :
    > *"Je vais envoyer le coffret avec les options suivantes : Un 'Coffret Sans Noix' : 28 euros + Des gaufres vergeoises pour accompagner le déjeuner de votre fils : 6 euros + Une carte-cadeau de 10 euros pour pouvoir revenir nous rendre visite dans notre boutique. Au total, c'est une commande de 44 euros."*
    
-   * **Infraction & Risque :** Le modèle invente un panier d'achat à 44 €, des produits inexistants au catalogue (gaufres au détail à 6 €) et une fausse carte-cadeau. C'est une violation directe de l'obligation de loyauté commerciale (pratiques commerciales trompeuses).
+   * **Infraction & Risque :** Le modèle invente un panier d'achat à 44 €, des produits inexistants au catalogue (gaufres au détail à 6 €) et une fausse carte-cadeau. C'est une violation directe de l'obligation de loyauté commerciale (pratiques commerciales trompeuses, Code de la consommation).
 
 ---
 
@@ -56,7 +60,30 @@ Pour évaluer la sobriété du système, le scénario automatisé [load_test.py]
 
 ---
 
-## 4. Latence et Dynamique Séquentielle (« Effet Mémoire »)
+## 4. Évaluation Énergétique et Empreinte Carbone (CodeCarbon)
+
+Conformément au brief d'éco-conception, la consommation électrique réelle et les émissions de gaz à effet de serre ont été tracées via la bibliothèque **CodeCarbon (v3.3.1)** intégrée dans [load_test.py](file:///home/souhaib/Documents/proget_alternance/MAISON_DELCOURT/load_test.py).
+
+### Protocole de mesure :
+1. **Warmup préalable :** Une requête préliminaire d'échauffement est exécutée hors mesure pour éliminer le biais du chargement initial du modèle en mémoire RAM.
+2. **Mesure sous charge :** Exécution de 3 runs successifs de 5 conversations (25 messages par run).
+3. **Consolidation statistique :** Extraction des moyennes via [summarize_emissions.py](file:///home/souhaib/Documents/proget_alternance/MAISON_DELCOURT/summarize_emissions.py) (données issues de `data/summary_chocobot-baseline.json`).
+
+### Résultats de Référence Environnementale (Baseline) :
+
+| Indicateur Écologique | Valeur Mesurée (Par Run de 25 messages) | Rapporté au Message Unique |
+| :--- | :---: | :---: |
+| **Durée d'inférence cumulée** | 140,07 s | **5,60 s / message** |
+| **Énergie électrique consommée** | 0,00046 kWh (0,46 Wh) | **0,018 Wh / message** |
+| **Émissions carbone (CO₂eq)** | 0,0259 g CO₂eq | **1,04 mg CO₂eq / message** |
+
+> [!TIP]
+> **Interprétation Green IT :**  
+> Si ChocoBot traite 10 000 conversations de 5 messages pendant la période de Noël (50 000 messages) dans sa configuration initiale non optimisée, les inférences généreront environ **52 g de CO₂eq** et consommeront près de **1 kWh** d'électricité sur une machine locale performante, chiffre qui s'envolerait sur des serveurs distants ou des GPU de datacenter.
+
+---
+
+## 5. Latence et Dynamique Séquentielle (« Effet Mémoire »)
 
 ![Percentiles de latence en charge](images/Capture%20d’écran%20du%202026-10-09%2000-11-45.png)
 
@@ -79,7 +106,7 @@ L'inspection des spans Phoenix démontre l'explosion progressive du contexte au 
 
 ---
 
-## 5. Qualité, Sécurité Sanitaire et Allergènes
+## 6. Qualité, Sécurité Sanitaire et Allergènes
 
 ![Test du client Billy avec allergies](images/Capture%20d’écran%20du%202026-10-08%2020-05-13.png)
 
@@ -96,7 +123,7 @@ L'inspection des spans Phoenix démontre l'explosion progressive du contexte au 
 
 ---
 
-## 6. Supervision et Diagnostic d'Incident (État Initial)
+## 7. Supervision et Diagnostic d'Incident (État Initial)
 
 Lors du test de résilience avec activation de la panne simulée (`FAIL_RATE = 0.5`) :
 1. **Comportement applicatif :**  
@@ -108,14 +135,15 @@ Lors du test de résilience avec activation de la panne simulée (`FAIL_RATE = 0
 
 ---
 
-## 7. Tableau Comparatif Prévisionnel (Leviers d'Optimisation)
+## 8. Tableau Comparatif Prévisionnel (Leviers d'Optimisation)
 
 Ce tableau synthétise l'état mesuré **AVANT** et fixe les objectifs cibles pour l'évaluation **APRÈS** correctifs :
 
 | Axe d'évaluation | État Initial (AVANT) | Cible Visée (APRÈS Correctifs) | Levier Technique Prévu |
 | :--- | :---: | :---: | :--- |
 | **Consommation Tokens (10 msgs)** | ~14 000 tokens | **< 6 000 tokens (-60 %)** | Cache mémoire FAQ + Réduction du catalogue injecté |
-| **Requêtes simples (ex. Horaires)** | Modèle 3B (1 600 tokens) | **0 token / 0 ms** | Détection d'intent FAQ / Cache local direct |
+| **Empreinte Carbone par Message** | **1,04 mg CO₂eq** | **< 0,45 mg CO₂eq (-55 %)** | Moins d'appels LLM + Modèle léger (`1b`) |
+| **Requêtes simples (ex. Horaires)** | Modèle 3B (1 600 tokens) | **0 token / 0 ms / 0 g CO₂** | Détection d'intent FAQ / Cache local direct |
 | **Croissance du contexte** | +109 % en 5 tours | **Constante (bornée)** | Fenêtre glissante (3 derniers messages) |
 | **Gestion des erreurs** | `except Exception` générique | **Supervision Sentry + Alertes** | Intégration Sentry SDK + mécanisme de retry/fallback |
 | **Sécurité Allergènes** | Probabiliste (LLM seul) | **Déterministe (100 % garanti)** | Guardrail de filtrage strict en amont |
