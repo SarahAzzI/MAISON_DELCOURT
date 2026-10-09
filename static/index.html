@@ -1,210 +1,573 @@
 <!doctype html>
 <html lang="fr">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Maison Delcourt · ChocoBot</title>
-<style>
-:root{--cacao:#2b1810;--cacao2:#4a2a1c;--creme:#f6ecdc;--papier:#fbf5ea;--or:#b8893b;--framboise:#a3243b;--ligne:#e4d5bb}
-*{box-sizing:border-box}
-body{margin:0;min-height:100vh;background:var(--creme);color:var(--cacao);font-family:Georgia,"Times New Roman",serif;
- background-image:radial-gradient(circle at 20% 0%,#fff7e6 0,transparent 45%),repeating-linear-gradient(45deg,transparent 0 22px,rgba(184,137,59,.05) 22px 23px)}
-header{background:var(--cacao);color:var(--creme);padding:22px 28px;border-bottom:4px solid var(--or);display:flex;align-items:baseline;gap:18px;flex-wrap:wrap}
-header h1{margin:0;font-size:1.7rem;letter-spacing:.04em;font-weight:700}
-header span{font-style:italic;color:#d9bf8c;font-size:.95rem}
-.ghost{margin-left:auto;background:transparent;border:1px solid var(--or);color:var(--creme);padding:7px 14px;border-radius:99px;font:inherit;font-size:.85rem;cursor:pointer}
-.ghost:hover{background:var(--or);color:var(--cacao)}
-main{max-width:1000px;margin:26px auto;padding:0 16px;display:grid;grid-template-columns:1fr 280px;gap:22px}
-@media(max-width:820px){main{grid-template-columns:1fr}}
-.box{background:var(--papier);border:1px solid var(--ligne);border-radius:6px;box-shadow:0 6px 22px rgba(43,24,16,.12)}
-#chat{display:flex;flex-direction:column;height:calc(100vh - 170px);min-height:460px}
-#log{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:12px}
-.msg{max-width:82%;padding:11px 15px;border-radius:14px;line-height:1.45;font-size:1rem;white-space:pre-wrap}
-.bot{background:#fff;border:1px solid var(--ligne);align-self:flex-start;border-bottom-left-radius:3px}
-.me{background:var(--cacao2);color:var(--creme);align-self:flex-end;border-bottom-right-radius:3px}
-.who{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--or);margin-bottom:3px}
-.dots span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:var(--or);animation:b 1s infinite}
-.dots span:nth-child(2){animation-delay:.15s}.dots span:nth-child(3){animation-delay:.3s}
-@keyframes b{0%,80%,100%{transform:translateY(0);opacity:.4}40%{transform:translateY(-5px);opacity:1}}
-#chips{padding:0 20px 10px;display:flex;gap:8px;flex-wrap:wrap}
-.chip{border:1px solid var(--or);background:transparent;color:var(--cacao2);padding:6px 12px;border-radius:99px;cursor:pointer;font:inherit;font-size:.85rem}
-.chip:hover{background:var(--or);color:#fff}
-form#send{display:flex;gap:10px;padding:14px 20px;border-top:1px solid var(--ligne)}
-form#send input{flex:1;padding:12px 14px;border:1px solid var(--ligne);border-radius:6px;font:inherit;background:#fff}
-button.go{background:var(--framboise);color:#fff;border:0;border-radius:6px;padding:0 20px;font:inherit;font-weight:700;cursor:pointer}
-button.go:hover{filter:brightness(1.1)}
-aside{padding:20px;align-self:start}
-aside h2{margin:0 0 4px;font-size:1.05rem}
-aside p{margin:0 0 14px;font-size:.85rem;color:#6b5445;font-style:italic}
-aside label{display:block;font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;margin:10px 0 3px;color:var(--cacao2)}
-.save{width:100%;margin-top:16px;padding:11px 8px}
-#saved{margin-top:8px;font-size:.82rem;color:#3d7a3d;min-height:1.2em}
-button.go:disabled{opacity:.55;cursor:wait}
-aside input[type="text"], aside input[type="email"]{width:100%;padding:9px 10px;border:1px solid var(--ligne);border-radius:5px;font:inherit;background:#fff}
-.check-row{display:flex;align-items:flex-start;gap:8px;margin:12px 0 6px;cursor:pointer;font-size:.82rem;color:var(--cacao2)}
-.check-row input{margin-top:2px}
-.consent-box{font-size:.78rem;line-height:1.35;margin-top:14px;padding:8px;background:rgba(184,137,59,.08);border:1px solid var(--ligne);border-radius:4px}
-.erase-btn{width:100%;margin-top:10px;padding:8px;background:transparent;border:1px solid #d4a5a5;color:#8a2839;border-radius:6px;font:inherit;font-size:.8rem;cursor:pointer}
-.erase-btn:hover{background:#faeaea}
-.legal-box{margin-top:16px;padding-top:10px;border-top:1px solid var(--ligne);font-size:.73rem;color:#7a6657;line-height:1.4}
-.banner-notice{background:#fff9ee;border-bottom:2px solid var(--or);padding:8px 24px;font-size:.78rem;color:#5a3c28;display:flex;flex-direction:column;gap:3px;line-height:1.4}
-@media(min-width:768px){.banner-notice{flex-direction:row;justify-content:space-between;gap:16px}}
-</style>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Maison Delcourt · ChocoBot</title>
+  <link rel="icon" type="image/png" href="/static/logoDelcourt.png">
+  <style>
+    :root {
+      --cacao: #2b1810;
+      --cacao2: #4a2a1c;
+      --creme: #f6ecdc;
+      --papier: #fbf5ea;
+      --or: #b8893b;
+      --framboise: #a3243b;
+      --ligne: #e4d5bb
+    }
+
+    * {
+      box-sizing: border-box
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--creme);
+      color: var(--cacao);
+      font-family: Georgia, "Times New Roman", serif;
+      background-image: radial-gradient(circle at 20% 0%, #fff7e6 0, transparent 45%), repeating-linear-gradient(45deg, transparent 0 22px, rgba(184, 137, 59, .05) 22px 23px)
+    }
+
+    header {
+      background: var(--cacao);
+      color: var(--creme);
+      padding: 14px 28px;
+      border-bottom: 4px solid var(--or);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      flex-wrap: wrap
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 18px
+    }
+
+    .logo {
+      width: 88px;
+      height: 88px;
+      border-radius: 50%;
+      border: 3px solid var(--or);
+      object-fit: cover;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+      background: var(--papier);
+      transition: transform .2s ease
+    }
+
+    .logo:hover {
+      transform: scale(1.04)
+    }
+
+    .brand-text h1 {
+      margin: 0;
+      font-size: 1.75rem;
+      letter-spacing: .04em;
+      font-weight: 700;
+      line-height: 1.15
+    }
+
+    .brand-text span {
+      font-style: italic;
+      color: #d9bf8c;
+      font-size: 1rem
+    }
+
+    .ghost {
+      background: transparent;
+      border: 1px solid var(--or);
+      color: var(--creme);
+      padding: 7px 14px;
+      border-radius: 99px;
+      font: inherit;
+      font-size: .85rem;
+      cursor: pointer
+    }
+
+    .ghost:hover {
+      background: var(--or);
+      color: var(--cacao)
+    }
+
+    .bot-avatar {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      vertical-align: middle;
+      margin-right: 6px;
+      border: 1px solid var(--or);
+      object-fit: cover
+    }
+
+    main {
+      max-width: 1000px;
+      margin: 26px auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: 1fr 280px;
+      gap: 22px
+    }
+
+    @media(max-width:820px) {
+      main {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media(max-width:600px) {
+      .logo {
+        width: 64px;
+        height: 64px
+      }
+
+      .brand-text h1 {
+        font-size: 1.3rem
+      }
+    }
+
+    .box {
+      background: var(--papier);
+      border: 1px solid var(--ligne);
+      border-radius: 6px;
+      box-shadow: 0 6px 22px rgba(43, 24, 16, .12)
+    }
+
+    #chat {
+      display: flex;
+      flex-direction: column;
+      height: calc(100vh - 170px);
+      min-height: 460px
+    }
+
+    #log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px
+    }
+
+    .msg {
+      max-width: 82%;
+      padding: 11px 15px;
+      border-radius: 14px;
+      line-height: 1.45;
+      font-size: 1rem;
+      white-space: pre-wrap
+    }
+
+    .bot {
+      background: #fff;
+      border: 1px solid var(--ligne);
+      align-self: flex-start;
+      border-bottom-left-radius: 3px
+    }
+
+    .me {
+      background: var(--cacao2);
+      color: var(--creme);
+      align-self: flex-end;
+      border-bottom-right-radius: 3px
+    }
+
+    .who {
+      font-size: .72rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--or);
+      margin-bottom: 3px
+    }
+
+    .dots span {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      margin: 0 2px;
+      border-radius: 50%;
+      background: var(--or);
+      animation: b 1s infinite
+    }
+
+    .dots span:nth-child(2) {
+      animation-delay: .15s
+    }
+
+    .dots span:nth-child(3) {
+      animation-delay: .3s
+    }
+
+    @keyframes b {
+
+      0%,
+      80%,
+      100% {
+        transform: translateY(0);
+        opacity: .4
+      }
+
+      40% {
+        transform: translateY(-5px);
+        opacity: 1
+      }
+    }
+
+    #chips {
+      padding: 0 20px 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap
+    }
+
+    .chip {
+      border: 1px solid var(--or);
+      background: transparent;
+      color: var(--cacao2);
+      padding: 6px 12px;
+      border-radius: 99px;
+      cursor: pointer;
+      font: inherit;
+      font-size: .85rem
+    }
+
+    .chip:hover {
+      background: var(--or);
+      color: #fff
+    }
+
+    form#send {
+      display: flex;
+      gap: 10px;
+      padding: 14px 20px;
+      border-top: 1px solid var(--ligne)
+    }
+
+    form#send input {
+      flex: 1;
+      padding: 12px 14px;
+      border: 1px solid var(--ligne);
+      border-radius: 6px;
+      font: inherit;
+      background: #fff
+    }
+
+    button.go {
+      background: var(--framboise);
+      color: #fff;
+      border: 0;
+      border-radius: 6px;
+      padding: 0 20px;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer
+    }
+
+    button.go:hover {
+      filter: brightness(1.1)
+    }
+
+    aside {
+      padding: 20px;
+      align-self: start
+    }
+
+    aside h2 {
+      margin: 0 0 4px;
+      font-size: 1.05rem
+    }
+
+    aside p {
+      margin: 0 0 14px;
+      font-size: .85rem;
+      color: #6b5445;
+      font-style: italic
+    }
+
+    aside label {
+      display: block;
+      font-size: .78rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin: 10px 0 3px;
+      color: var(--cacao2)
+    }
+
+    .save {
+      width: 100%;
+      margin-top: 16px;
+      padding: 11px 8px
+    }
+
+    #saved {
+      margin-top: 8px;
+      font-size: .82rem;
+      color: #3d7a3d;
+      min-height: 1.2em
+    }
+
+    button.go:disabled {
+      opacity: .55;
+      cursor: wait
+    }
+
+    aside input[type="text"],
+    aside input[type="email"] {
+      width: 100%;
+      padding: 9px 10px;
+      border: 1px solid var(--ligne);
+      border-radius: 5px;
+      font: inherit;
+      background: #fff
+    }
+
+    .check-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      margin: 12px 0 6px;
+      cursor: pointer;
+      font-size: .82rem;
+      color: var(--cacao2)
+    }
+
+    .check-row input {
+      margin-top: 2px
+    }
+
+    .consent-box {
+      font-size: .78rem;
+      line-height: 1.35;
+      margin-top: 14px;
+      padding: 8px;
+      background: rgba(184, 137, 59, .08);
+      border: 1px solid var(--ligne);
+      border-radius: 4px
+    }
+
+    .erase-btn {
+      width: 100%;
+      margin-top: 10px;
+      padding: 8px;
+      background: transparent;
+      border: 1px solid #d4a5a5;
+      color: #8a2839;
+      border-radius: 6px;
+      font: inherit;
+      font-size: .8rem;
+      cursor: pointer
+    }
+
+    .erase-btn:hover {
+      background: #faeaea
+    }
+
+    .legal-box {
+      margin-top: 16px;
+      padding-top: 10px;
+      border-top: 1px solid var(--ligne);
+      font-size: .73rem;
+      color: #7a6657;
+      line-height: 1.4
+    }
+
+    .banner-notice {
+      background: #fff9ee;
+      border-bottom: 2px solid var(--or);
+      padding: 8px 24px;
+      font-size: .78rem;
+      color: #5a3c28;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      line-height: 1.4
+    }
+
+    @media(min-width:768px) {
+      .banner-notice {
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 16px
+      }
+    }
+  </style>
 </head>
+
 <body>
-<header><h1>MAISON DELCOURT</h1><span>Chocolatier artisanal · Lille</span><button id="reset" class="ghost">Nouvelle conversation</button></header>
-<div class="banner-notice">
-  <span><strong>Transparence (AI Act Art. 50) :</strong> ChocoBot est un assistant d'intelligence artificielle automatisé. Les réponses sont informatives et ne remplacent pas l'étiquetage légal.</span>
-  <span><strong>Sécurité Allergènes (INCO) :</strong> Atelier partagé manipulant fruits à coque, gluten, lait, œuf, soja et arachides. Traces fortuites possibles.</span>
-</div>
-<main>
- <section id="chat" class="box">
-  <div id="log"></div>
-  <div id="chips">
-   <button class="chip">Un coffret à 30 euros</button>
-   <button class="chip">Un cadeau pour des enfants</button>
-   <button class="chip">Du chocolat noir intense</button>
-   <button class="chip">Quels sont vos horaires ?</button>
-   <button class="chip">Livraison ?</button>
+  <header>
+    <div class="brand">
+      <img src="/static/logoDelcourt.png" alt="Logo Maison Delcourt ChocoBot" class="logo">
+      <div class="brand-text">
+        <h1>MAISON DELCOURT</h1>
+        <span>Chocolatier artisanal · Lille</span>
+      </div>
+    </div>
+    <button id="reset" class="ghost">Nouvelle conversation</button>
+  </header>
+  <div class="banner-notice">
+    <span><strong>Transparence (AI Act Art. 50) :</strong> ChocoBot est un assistant d'intelligence artificielle
+      automatisé. Les réponses sont informatives et ne remplacent pas l'étiquetage légal.</span>
+    <span><strong>Sécurité Allergènes (INCO) :</strong> Atelier partagé manipulant fruits à coque, gluten, lait, œuf,
+      soja et arachides. Traces fortuites possibles.</span>
   </div>
-  <form id="send"><input id="msg" autocomplete="off" placeholder="Écrivez votre message…" required><button class="go" id="go">Envoyer</button></form>
- </section>
- <aside class="box">
-  <h2>Pour mieux vous conseiller</h2>
-  <p>Ces informations facultatives nous aident à vous orienter.</p>
-  <label for="name">Prénom (facultatif)</label><input id="name" type="text" placeholder="ex. Camille">
-  <label for="email">Email (facultatif)</label><input id="email" type="email" placeholder="contact@exemple.fr">
-  <label for="allergies">Allergies éventuelles</label><input id="allergies" type="text" placeholder="ex. noisettes, gluten">
-  
-  <label class="check-row" for="kids_fam">
-    <input id="kids_fam" type="checkbox">
-    <span>Sélection adaptée à toute la famille / enfants</span>
-  </label>
-  <input id="kids" type="hidden">
+  <main>
+    <section id="chat" class="box">
+      <div id="log"></div>
+      <div id="chips">
+        <button class="chip">Un coffret à 30 euros</button>
+        <button class="chip">Un cadeau pour des enfants</button>
+        <button class="chip">Du chocolat noir intense</button>
+        <button class="chip">Quels sont vos horaires ?</button>
+        <button class="chip">Livraison ?</button>
+      </div>
+      <form id="send"><input id="msg" autocomplete="off" placeholder="Écrivez votre message…" required><button
+          class="go" id="go">Envoyer</button></form>
+    </section>
+    <aside class="box">
+      <h2>Pour mieux vous conseiller</h2>
+      <p>Ces informations facultatives nous aident à vous orienter.</p>
+      <label for="name">Prénom (facultatif)</label><input id="name" type="text" placeholder="ex. Camille">
+      <label for="email">Email (facultatif)</label><input id="email" type="email" placeholder="contact@exemple.fr">
+      <label for="allergies">Allergies éventuelles</label><input id="allergies" type="text"
+        placeholder="ex. noisettes, gluten">
 
-  <div class="consent-box">
-    <label class="check-row" for="consent" style="margin:0">
-      <input id="consent" type="checkbox" required>
-      <span><strong>Consentement RGPD :</strong> J'accepte que la Maison Delcourt traite mes données (dont allergies) pour cette recommandation.</span>
-    </label>
-  </div>
+      <label class="check-row" for="kids_fam">
+        <input id="kids_fam" type="checkbox">
+        <span>Sélection adaptée à toute la famille / enfants</span>
+      </label>
+      <input id="kids" type="hidden">
 
-  <button id="save" class="go save" type="button">Enregistrer mes préférences</button>
-  <div id="saved"></div>
+      <div class="consent-box">
+        <label class="check-row" for="consent" style="margin:0">
+          <input id="consent" type="checkbox" required>
+          <span><strong>Consentement RGPD :</strong> J'accepte que la Maison Delcourt traite mes données (dont
+            allergies) pour cette recommandation.</span>
+        </label>
+      </div>
 
-  <button id="erase" class="erase-btn" type="button">Effacer mes données (Droit à l'oubli)</button>
+      <button id="save" class="go save" type="button">Enregistrer mes préférences</button>
+      <div id="saved"></div>
 
-  <div class="legal-box">
-    <strong>Protection des données (RGPD) :</strong> Vos informations sont conservées 30 jours maximum et ne sont jamais cédées. Vous disposez d'un droit d'accès et d'effacement direct (Art. 17) via le bouton ci-dessus.<br><br>
-    <strong>Droit de la consommation :</strong> Conformément à l'Art. L. 221-28 4° du Code de la consommation, le droit de rétractation ne s'applique pas aux denrées alimentaires fraîches.<br><br>
-    <strong>AI Act (Art. 50) :</strong> Vous conversez avec un agent conversationnel automatisé d'IA.
-  </div>
- </aside>
-</main>
-<script>
-const log = document.getElementById("log");
-const ids = ["name", "email", "allergies", "kids"];
-const el = id => document.getElementById(id);
-let sid = localStorage.sid || (localStorage.sid = crypto.randomUUID());
-let busy = false;
+      <button id="erase" class="erase-btn" type="button">Effacer mes données (Droit à l'oubli)</button>
 
-function add(text, who){
-  const d = document.createElement("div"); d.className = "msg " + who;
-  d.innerHTML = '<div class="who">' + (who === "bot" ? "ChocoBot · Maison Delcourt" : "Vous") + "</div>";
-  const t = document.createElement("div"); t.textContent = text; d.appendChild(t);
-  log.appendChild(d); log.scrollTop = log.scrollHeight; return d;
-}
-function welcome(){
-  add("Bonjour, je suis ChocoBot, assistant virtuel de la Maison Delcourt. Pour quelle occasion cherchez-vous des chocolats ?", "bot");
-}
-async function post(path, payload){
-  const r = await fetch(path, {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(payload)});
-  if (!r.ok) {
-    const err = await r.json().catch(() => ({}));
-    throw new Error(err.detail || ("HTTP " + r.status));
-  }
-  return r.json();
-}
-async function send(text){
-  if (busy) return;
-  busy = true; el("go").disabled = true;
-  add(text, "me");
-  const wait = add("", "bot");
-  wait.lastChild.innerHTML = '<span class="dots"><span></span><span></span><span></span></span>';
-  try {
-    wait.lastChild.textContent = (await post("/chat", {session_id: sid, message: text})).reply;
-  } catch (e) {
-    wait.lastChild.textContent = "Désolé, une erreur est survenue.";
-  }
-  busy = false; el("go").disabled = false; el("msg").focus();
-  log.scrollTop = log.scrollHeight;
-}
-el("send").onsubmit = e => {
-  e.preventDefault();
-  const i = el("msg");
-  if (i.value.trim()) { send(i.value.trim()); i.value = ""; }
-};
-document.querySelectorAll(".chip").forEach(c => c.onclick = () => send(c.textContent));
+      <div class="legal-box">
+        <strong>Protection des données (RGPD) :</strong> Vos informations sont conservées 30 jours maximum et ne sont
+        jamais cédées. Vous disposez d'un droit d'accès et d'effacement direct (Art. 17) via le bouton
+        ci-dessus.<br><br>
+        <strong>Droit de la consommation :</strong> Conformément à l'Art. L. 221-28 4° du Code de la consommation, le
+        droit de rétractation ne s'applique pas aux denrées alimentaires fraîches.<br><br>
+        <strong>AI Act (Art. 50) :</strong> Vous conversez avec un agent conversationnel automatisé d'IA.
+      </div>
+    </aside>
+  </main>
+  <script>
+    const log = document.getElementById("log");
+    const ids = ["name", "email", "allergies", "kids"];
+    const el = id => document.getElementById(id);
+    let sid = localStorage.sid || (localStorage.sid = crypto.randomUUID());
+    let busy = false;
 
-// Enregistrement des préférences avec contrôle du consentement
-el("save").onclick = async () => {
-  if (el("allergies").value.trim() && !el("consent").checked) {
-    el("saved").style.color = "#a3243b";
-    el("saved").textContent = "Attention : veuillez cocher la case de consentement pour enregistrer vos allergies.";
-    el("consent").focus();
-    return;
-  }
-  el("save").disabled = true;
-  try {
-    const familyVal = el("kids_fam").checked ? "oui (sélection familiale)" : el("kids").value;
-    await post("/profile", {
-      session_id: sid,
-      name: el("name").value,
-      email: el("email").value,
-      allergies: el("allergies").value,
-      children_ages: familyVal,
-      family_friendly: el("kids_fam").checked,
-      consent_data: el("consent").checked
-    });
-    el("saved").style.color = "#3d7a3d";
-    el("saved").textContent = "Informations enregistrées avec succès.";
-  } catch (e) {
-    el("saved").style.color = "#a3243b";
-    el("saved").textContent = e.message || "Échec de l'enregistrement";
-  }
-  el("save").disabled = false;
-};
+    function add(text, who) {
+      const d = document.createElement("div"); d.className = "msg " + who;
+      const avatar = who === "bot" ? '<img src="/static/logoDelcourt.png" class="bot-avatar" alt="Avatar"> ' : '';
+      d.innerHTML = '<div class="who">' + avatar + (who === "bot" ? "ChocoBot · Maison Delcourt" : "Vous") + "</div>";
+      const t = document.createElement("div"); t.textContent = text; d.appendChild(t);
+      log.appendChild(d); log.scrollTop = log.scrollHeight; return d;
+    }
+    function welcome() {
+      add("Bonjour, je suis ChocoBot, assistant virtuel de la Maison Delcourt. Pour quelle occasion cherchez-vous des chocolats ?", "bot");
+    }
+    async function post(path, payload) {
+      const r = await fetch(path, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(payload) });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        throw new Error(err.detail || ("HTTP " + r.status));
+      }
+      return r.json();
+    }
+    async function send(text) {
+      if (busy) return;
+      busy = true; el("go").disabled = true;
+      add(text, "me");
+      const wait = add("", "bot");
+      wait.lastChild.innerHTML = '<span class="dots"><span></span><span></span><span></span></span>';
+      try {
+        wait.lastChild.textContent = (await post("/chat", { session_id: sid, message: text })).reply;
+      } catch (e) {
+        wait.lastChild.textContent = "Désolé, une erreur est survenue.";
+      }
+      busy = false; el("go").disabled = false; el("msg").focus();
+      log.scrollTop = log.scrollHeight;
+    }
+    el("send").onsubmit = e => {
+      e.preventDefault();
+      const i = el("msg");
+      if (i.value.trim()) { send(i.value.trim()); i.value = ""; }
+    };
+    document.querySelectorAll(".chip").forEach(c => c.onclick = () => send(c.textContent));
 
-// Droit à l'effacement (RGPD Art. 17)
-el("erase").onclick = async () => {
-  if (!confirm("Voulez-vous supprimer l'ensemble de vos données de session et conversations ?")) return;
-  try {
-    await fetch("/profile/" + sid, {method: "DELETE"});
-    ids.forEach(id => el(id).value = "");
-    el("kids_fam").checked = false;
-    el("consent").checked = false;
-    el("saved").style.color = "#3d7a3d";
-    el("saved").textContent = "Vos données ont été effacées.";
-    sid = localStorage.sid = crypto.randomUUID();
-    log.innerHTML = "";
+    // Enregistrement des préférences avec contrôle du consentement
+    el("save").onclick = async () => {
+      if (el("allergies").value.trim() && !el("consent").checked) {
+        el("saved").style.color = "#a3243b";
+        el("saved").textContent = "Attention : veuillez cocher la case de consentement pour enregistrer vos allergies.";
+        el("consent").focus();
+        return;
+      }
+      el("save").disabled = true;
+      try {
+        const familyVal = el("kids_fam").checked ? "oui (sélection familiale)" : el("kids").value;
+        await post("/profile", {
+          session_id: sid,
+          name: el("name").value,
+          email: el("email").value,
+          allergies: el("allergies").value,
+          children_ages: familyVal,
+          family_friendly: el("kids_fam").checked,
+          consent_data: el("consent").checked
+        });
+        el("saved").style.color = "#3d7a3d";
+        el("saved").textContent = "Informations enregistrées avec succès.";
+      } catch (e) {
+        el("saved").style.color = "#a3243b";
+        el("saved").textContent = e.message || "Échec de l'enregistrement";
+      }
+      el("save").disabled = false;
+    };
+
+    // Droit à l'effacement (RGPD Art. 17)
+    el("erase").onclick = async () => {
+      if (!confirm("Voulez-vous supprimer l'ensemble de vos données de session et conversations ?")) return;
+      try {
+        await fetch("/profile/" + sid, { method: "DELETE" });
+        ids.forEach(id => el(id).value = "");
+        el("kids_fam").checked = false;
+        el("consent").checked = false;
+        el("saved").style.color = "#3d7a3d";
+        el("saved").textContent = "Vos données ont été effacées.";
+        sid = localStorage.sid = crypto.randomUUID();
+        log.innerHTML = "";
+        welcome();
+      } catch (e) {
+        el("saved").style.color = "#a3243b";
+        el("saved").textContent = "Erreur lors de l'effacement";
+      }
+    };
+
+    ids.forEach(id => el(id).addEventListener("input", () => el("saved").textContent = ""));
+
+    el("reset").onclick = () => {
+      sid = localStorage.sid = crypto.randomUUID();
+      log.innerHTML = ""; ids.forEach(id => el(id).value = "");
+      el("kids_fam").checked = false;
+      el("saved").textContent = "";
+      welcome();
+    };
     welcome();
-  } catch (e) {
-    el("saved").style.color = "#a3243b";
-    el("saved").textContent = "Erreur lors de l'effacement";
-  }
-};
-
-ids.forEach(id => el(id).addEventListener("input", () => el("saved").textContent = ""));
-
-el("reset").onclick = () => {
-  sid = localStorage.sid = crypto.randomUUID();
-  log.innerHTML = ""; ids.forEach(id => el(id).value = "");
-  el("kids_fam").checked = false;
-  el("saved").textContent = "";
-  welcome();
-};
-welcome();
-</script>
+  </script>
 </body>
-</html>
 
+</html>

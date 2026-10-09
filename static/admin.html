@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Back-office · Maison Delcourt</title>
+<link rel="icon" type="image/png" href="/static/logoDelcourt.png">
 <style>
 body{margin:0;font-family:system-ui,Segoe UI,sans-serif;background:#f4efe6;color:#2b1810}
 header{background:#2b1810;color:#f6ecdc;padding:16px 24px;border-bottom:4px solid #b8893b}
@@ -21,7 +22,10 @@ small{color:#7a6657}
 </style>
 </head>
 <body>
-<header><h1>Back-office ChocoBot · Maison Delcourt</h1></header>
+<header style="display:flex;align-items:center;gap:16px;padding:12px 24px">
+  <img src="/static/logoDelcourt.png" alt="Logo Maison Delcourt" style="width:52px;height:52px;border-radius:50%;border:2px solid #b8893b;object-fit:cover;box-shadow:0 2px 8px rgba(0,0,0,.3)">
+  <h1 style="margin:0;font-size:1.3rem">Back-office ChocoBot · Maison Delcourt</h1>
+</header>
 <main>
  <div id="alert-banner" style="display:none;background:#fde8e8;border:2px solid #a3243b;color:#a3243b;padding:12px 18px;border-radius:6px;margin-bottom:18px;font-weight:bold;">
   ⚠️ ALERTE SUPERVISION : Défaillance détectée sur le service LLM. Le mode de secours dégradé (fallback) a été déclenché pour protéger l'expérience client.
