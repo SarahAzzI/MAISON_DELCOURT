@@ -23,6 +23,9 @@ small{color:#7a6657}
 <body>
 <header><h1>Back-office ChocoBot · Maison Delcourt</h1></header>
 <main>
+ <div id="alert-banner" style="display:none;background:#fde8e8;border:2px solid #a3243b;color:#a3243b;padding:12px 18px;border-radius:6px;margin-bottom:18px;font-weight:bold;">
+  ⚠️ ALERTE SUPERVISION : Défaillance détectée sur le service LLM. Le mode de secours dégradé (fallback) a été déclenché pour protéger l'expérience client.
+ </div>
  <div class="stats">
   <div class="stat"><b id="nc">–</b>clients</div>
   <div class="stat"><b id="nm">–</b>messages (200 derniers)</div>
@@ -34,17 +37,23 @@ small{color:#7a6657}
    <b style="color:#b8893b;font-size:1.2rem">Arize Phoenix ↗</b>dashboard traces & evals
   </a>
  </div>
+ <h2>Journal des Incidents Supervisés (Sentry & Logs)</h2>
+ <div class="wrap"><table id="ti"></table></div>
  <h2>Clients</h2>
  <div class="wrap"><table id="tc"></table></div>
  <h2>Conversations</h2>
  <div class="wrap"><table id="tm"></table></div>
  <h2>Dernières Métriques LLM</h2>
  <div class="wrap"><table id="tk"></table></div>
- <p><small>Base SQLite : fichier <code>chocobot.db</code> à la racine du projet · Dashboard Phoenix sur <code>http://localhost:6006</code></small></p>
+ <p><small>Base SQLite : fichier <code>chocobot.db</code> · Logs incidents : <code>logs/incidents.log</code> · Phoenix sur <code>http://localhost:6006</code></small></p>
 </main>
 <script>
 const fmt = t => new Date(t * 1000).toLocaleString("fr-FR");
 function table(el, cols, rows){
+  if (!rows || rows.length === 0) {
+    el.innerHTML = "<tr><td style='padding:12px;color:#7a6657;font-style:italic'>Aucun enregistrement pour le moment.</td></tr>";
+    return;
+  }
   el.innerHTML = "<tr>" + cols.map(c => "<th>" + c[1] + "</th>").join("") + "</tr>" +
     rows.map(r => "<tr>" + cols.map(c => {
       const v = c[0] === "created_at" ? fmt(r[c[0]]) : r[c[0]];
@@ -60,13 +69,21 @@ fetch("/admin/data").then(r => r.json()).then(d => {
     document.getElementById("ntok").textContent = d.stats.total_tokens.toLocaleString("fr-FR");
     document.getElementById("nlat").textContent = d.stats.avg_latency + " s";
     document.getElementById("nerr").textContent = d.stats.errors_count;
+    if (d.stats.errors_count > 0) {
+      document.getElementById("alert-banner").style.display = "block";
+      document.getElementById("nerr").style.color = "#a3243b";
+    }
   }
   table(document.getElementById("tc"), [["created_at","Date"],["name","Nom"],["email","Email"],["allergies","Allergies"],["children_ages","Enfants"],["session_id","Session"]], d.customers);
   table(document.getElementById("tm"), [["created_at","Date"],["session_id","Session"],["role","Rôle"],["content","Message"]], d.messages);
   if (d.metrics && document.getElementById("tk")) {
     table(document.getElementById("tk"), [["created_at","Date"],["session_id","Session"],["model","Modèle"],["total_tokens","Tokens"],["latency_seconds","Latence (s)"],["status","Statut"]], d.metrics);
   }
+  if (d.recent_incidents && document.getElementById("ti")) {
+    table(document.getElementById("ti"), [["timestamp","Date/Heure"],["type","Type d'incident"],["message","Détail"],["session","Session"]], d.recent_incidents);
+  }
 });
 </script>
 </body>
 </html>
+
