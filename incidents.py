@@ -90,17 +90,17 @@ def get_fallback_recommendation(customer: dict = None) -> str:
 
     if "coque" in allergies or "noisette" in allergies or "noix" in allergies:
         return (
-            "⚠️ *Information de service : Notre assistant d'échange en direct est momentanément indisponible.*\n\n"
+            "[Information de service : Notre assistant d'échange en direct est momentanément indisponible.]\n\n"
             "Pour respecter strictement vos allergies aux fruits à coque, nous vous orientons vers notre sélection garantie sans noix :\n"
-            "• **Coffret Sans Noix (C04 - 28 €)** : ganache vanille, framboise, menthe.\n\n"
+            "• Coffret Sans Noix (C04 - 28 €) : ganache vanille, framboise, menthe.\n\n"
             "Nos chocolatiers en boutique à Lille (03 20 00 00 00) sont à votre disposition pour vous conseiller."
         )
 
     return (
-        "⚠️ *Information de service : Notre assistant d'échange en direct est momentanément indisponible.*\n\n"
+        "[Information de service : Notre assistant d'échange en direct est momentanément indisponible.]\n\n"
         "Voici notre sélection incontournable de la Maison Delcourt :\n"
-        "• **Coffret Beffroi (C01 - 24 €)** : notre grand classique chocolat au lait et praliné.\n"
-        "• **Coffret Ch'ti Noir (C02 - 32 €)** : chocolat noir intense 72% et orange confite.\n"
-        "• **Coffret Gaufre de Lille (C03 - 18 €)** : gourmand aux gaufres vergeoises et spéculoos.\n\n"
+        "• Coffret Beffroi (C01 - 24 €) : notre grand classique chocolat au lait et praliné.\n"
+        "• Coffret Ch'ti Noir (C02 - 32 €) : chocolat noir intense 72% et orange confite.\n"
+        "• Coffret Gaufre de Lille (C03 - 18 €) : gourmand aux gaufres vergeoises et spéculoos.\n\n"
         "N'hésitez pas à vérifier les allergènes sur nos emballages ou à contacter nos boutiques lilloises."
     )
