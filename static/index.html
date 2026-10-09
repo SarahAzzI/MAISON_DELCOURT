@@ -47,10 +47,16 @@ aside input[type="text"], aside input[type="email"]{width:100%;padding:9px 10px;
 .erase-btn{width:100%;margin-top:10px;padding:8px;background:transparent;border:1px solid #d4a5a5;color:#8a2839;border-radius:6px;font:inherit;font-size:.8rem;cursor:pointer}
 .erase-btn:hover{background:#faeaea}
 .legal-box{margin-top:16px;padding-top:10px;border-top:1px solid var(--ligne);font-size:.73rem;color:#7a6657;line-height:1.4}
+.banner-notice{background:#fff9ee;border-bottom:2px solid var(--or);padding:8px 24px;font-size:.78rem;color:#5a3c28;display:flex;flex-direction:column;gap:3px;line-height:1.4}
+@media(min-width:768px){.banner-notice{flex-direction:row;justify-content:space-between;gap:16px}}
 </style>
 </head>
 <body>
 <header><h1>MAISON DELCOURT</h1><span>Chocolatier artisanal · Lille</span><button id="reset" class="ghost">Nouvelle conversation</button></header>
+<div class="banner-notice">
+  <span><strong>Transparence (AI Act Art. 50) :</strong> ChocoBot est un assistant d'intelligence artificielle automatisé. Les réponses sont informatives et ne remplacent pas l'étiquetage légal.</span>
+  <span><strong>Sécurité Allergènes (INCO) :</strong> Atelier partagé manipulant fruits à coque, gluten, lait, œuf, soja et arachides. Traces fortuites possibles.</span>
+</div>
 <main>
  <section id="chat" class="box">
   <div id="log"></div>
@@ -86,12 +92,12 @@ aside input[type="text"], aside input[type="email"]{width:100%;padding:9px 10px;
   <button id="save" class="go save" type="button">Enregistrer mes préférences</button>
   <div id="saved"></div>
 
-  <button id="erase" class="erase-btn" type="button">🗑️ Effacer mes données (Droit à l'oubli)</button>
+  <button id="erase" class="erase-btn" type="button">Effacer mes données (Droit à l'oubli)</button>
 
   <div class="legal-box">
-    🔒 Vos données restent confidentielles et ne sont jamais transmises. Conformément au RGPD (Art. 17), vous pouvez les supprimer d'un clic ci-dessus à tout moment.
-    Vous échangez avec une IA , pas avec un humain.
-
+    <strong>Protection des données (RGPD) :</strong> Vos informations sont conservées 30 jours maximum et ne sont jamais cédées. Vous disposez d'un droit d'accès et d'effacement direct (Art. 17) via le bouton ci-dessus.<br><br>
+    <strong>Droit de la consommation :</strong> Conformément à l'Art. L. 221-28 4° du Code de la consommation, le droit de rétractation ne s'applique pas aux denrées alimentaires fraîches.<br><br>
+    <strong>AI Act (Art. 50) :</strong> Vous conversez avec un agent conversationnel automatisé d'IA.
   </div>
  </aside>
 </main>
@@ -144,7 +150,7 @@ document.querySelectorAll(".chip").forEach(c => c.onclick = () => send(c.textCon
 el("save").onclick = async () => {
   if (el("allergies").value.trim() && !el("consent").checked) {
     el("saved").style.color = "#a3243b";
-    el("saved").textContent = "⚠️ Veuillez cocher la case de consentement pour enregistrer vos allergies.";
+    el("saved").textContent = "Attention : veuillez cocher la case de consentement pour enregistrer vos allergies.";
     el("consent").focus();
     return;
   }
@@ -161,7 +167,7 @@ el("save").onclick = async () => {
       consent_data: el("consent").checked
     });
     el("saved").style.color = "#3d7a3d";
-    el("saved").textContent = "✓ Informations enregistrées";
+    el("saved").textContent = "Informations enregistrées avec succès.";
   } catch (e) {
     el("saved").style.color = "#a3243b";
     el("saved").textContent = e.message || "Échec de l'enregistrement";
@@ -178,7 +184,7 @@ el("erase").onclick = async () => {
     el("kids_fam").checked = false;
     el("consent").checked = false;
     el("saved").style.color = "#3d7a3d";
-    el("saved").textContent = "✓ Vos données ont été effacées.";
+    el("saved").textContent = "Vos données ont été effacées.";
     sid = localStorage.sid = crypto.randomUUID();
     log.innerHTML = "";
     welcome();

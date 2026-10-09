@@ -5,12 +5,25 @@ from fastapi.responses import FileResponse, JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from contextlib import asynccontextmanager
 from chatbot import handle_chat
 import db
 import llm
 import incidents
 
-app = FastAPI(title="ChocoBot - Maison Delcourt")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Purge automatique des sessions inactives > 30 jours (RGPD Art. 5.1.e)
+    try:
+        db.purge_old_sessions(max_age_seconds=30 * 86400)
+        print("[RGPD] Purge automatique des données expirées exécutée avec succès.")
+    except Exception as e:
+        print(f"[RGPD] Erreur lors de la purge automatique : {e}")
+    yield
+
+
+app = FastAPI(title="ChocoBot - Maison Delcourt", lifespan=lifespan)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
