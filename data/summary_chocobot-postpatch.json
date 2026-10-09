@@ -1,0 +1,27 @@
+{
+  "project_name": "chocobot-postpatch",
+  "nb_runs": 1,
+  "messages_par_run": 10,
+  "runs_timestamps": [
+    "2026-10-09T12:26:45"
+  ],
+  "codecarbon_version": "3.3.1",
+  "machine": "13th Gen Intel(R) Core(TM) i7-13650HX",
+  "pays": "France",
+  "duration_s": {
+    "moyenne": 13.312547984001867,
+    "min": 13.312547984001867,
+    "max": 13.312547984001867
+  },
+  "energy_kwh": {
+    "moyenne": 0.00016574782721340771,
+    "min": 0.00016574782721340771,
+    "max": 0.00016574782721340771
+  },
+  "emissions_kg": {
+    "moyenne": 9.288342489212156e-06,
+    "min": 9.288342489212156e-06,
+    "max": 9.288342489212156e-06
+  },
+  "mg_co2eq_par_message": 0.9288342489212157
+}

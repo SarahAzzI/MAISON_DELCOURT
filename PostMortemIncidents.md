@@ -92,6 +92,8 @@ L'incident est immédiatement intercepté dans le bloc `try...except` de `handle
   - Affichage automatique du bandeau d'alerte rouge :  
     *« ⚠️ ALERTE SUPERVISION : Défaillance détectée sur le service LLM. Le mode de secours dégradé (fallback) a été déclenché pour protéger l'expérience client. »*
 
+![Bandeau d'alerte et journal des incidents dans le back-office](images/Capture%20d’écran%20du%202026-10-09%2013-26-08.png)
+
 #### C. Résolution : Mode Dégradé Gracieux (*Graceful Fallback*)
 Plutôt que d'abandonner l'utilisateur, ChocoBot active la méthode `get_fallback_recommendation(customer)` ([incidents.py](file:///home/souhaib/Documents/proget_alternance/MAISON_DELCOURT/incidents.py#L84-L107)) :
 1. **Respect absolu des allergies (Règlement INCO) :** Si le client a déclaré une allergie aux fruits à coque ou noisettes, le système conseille systématiquement le **Coffret Sans Noix (C04 - 28 €)**.

@@ -26,8 +26,9 @@ post("/profile", {"session_id": warm_sid, "name": "Warmup", "email": "warmup@exa
                   "allergies": "", "children_ages": ""})
 post("/chat", {"session_id": warm_sid, "message": "Bonjour"})
 
+project_name = sys.argv[2] if len(sys.argv) > 2 else "chocobot-postpatch"
 tracker = EmissionsTracker(
-    project_name="chocobot-baseline",
+    project_name=project_name,
     output_dir="data",
     output_file="emissions.csv",
     log_level="error",

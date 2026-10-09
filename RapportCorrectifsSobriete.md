@@ -39,11 +39,11 @@ Suite à l'évaluation initiale réalisée avec **Arize Phoenix** et **CodeCarbo
   * Création d'un cache mémoire par session `_SESSION_CACHE` mémorisant les questions identiques au cours d'un échange.
   * Interception en amont dans `handle_chat()` avant tout appel d'inférence.
 
-![Validation du cache dans Arize Phoenix avec 0 token](images/Capture%20d’écran%20du%202026-10-09%2001-36-56.png)
+![Validation de l'échange et du filtrage allergène dans le nouveau front](images/Capture%20d’écran%20du%202026-10-09%2013-21-16.png)
 
 > [!NOTE]
-> **Preuve dans Arize Phoenix (Capture ci-dessus) :**  
-> Lors de la requête sur les horaires à 01:24:30, la trace Phoenix confirme un temps de réponse instantané de **33 ms** et une consommation de **0 token** (ligne `total tokens = 0`). Le modèle n'est plus sollicité inutilement.
+> **Validation du Front-End & du Cache (Capture ci-dessus) :**  
+> L'échange en direct démontre l'interception instantanée des questions statiques (*"et l'adresse ?"*) via le cache FAQ, le bon affichage de l'avatar ChocoBot, et la recommandation stricte sans allergènes (*Coffret Ch'ti Noir* et *Gaufre de Lille*) avec prix en euros TTC et grammage.
 
 ---
 
@@ -56,11 +56,11 @@ Suite à l'évaluation initiale réalisée avec **Arize Phoenix** et **CodeCarbo
     * Les requêtes de conseil complexes (budget, allergies, occasions) restent traitées par `BIG_MODEL` (`llama3.2:3b`).
   * Réduction du plafond de complétion `max_tokens` de **1 500 à 350 tokens**.
 
-![Maîtrise de la volumétrie des tokens après correctifs](images/Capture%20d’écran%20du%202026-10-09%2001-37-23.png)
+![Maîtrise de la volumétrie des tokens dans Arize Phoenix](images/Capture%20d’écran%20du%202026-10-09%2013-19-04.png)
 
 > [!TIP]
 > **Observation de la consommation (Capture ci-dessus) :**  
-> Sur une requête complète, le prompt est maintenu à **794 tokens** et la complétion est strictement bornée à **242 tokens** (fin des réponses à rallonge de 1 500 tokens).
+> Lors du test post-patch, le prompt est maintenu à **1 062 tokens** et la complétion est strictement bornée à **278 tokens** (conformément au plafond de 350 tokens, évitant toute génération verbeuse).
 
 ---
 
@@ -70,26 +70,44 @@ Suite à l'évaluation initiale réalisée avec **Arize Phoenix** et **CodeCarbo
 * **Correctif appliqué :**
   * Limitation de l'historique injecté aux **4 derniers messages** (`history[-4:]`), soit les 2 derniers tours de conversation complets.
 
-![Profil de latence après optimisation](images/Capture%20d’écran%20du%202026-10-09%2001-37-12.png)
+![Profil de latence après optimisation dans Arize Phoenix](images/Capture%20d’écran%20du%202026-10-09%2013-19-38.png)
 
 > [!IMPORTANT]
 > **Bilan sur la latence (Capture ci-dessus) :**  
-> Les requêtes en cache tombent à **0,01 s**, tandis que les requêtes de conseil traitées par le LLM restent stables sans subir la dégradation de temps causée par l'accumulation infinie de l'historique.
+> Dans Arize Phoenix, la **latence médiane (p50) chute à 0,02 s (20 ms)** grâce à l'absorption massive des requêtes par le cache et le routage de modèles, sans aucune dégradation temporelle liée à l'accumulation d'historique.
 
 ---
 
-## 3. Matrice d'Impact Avant / Après (Synthèse Chiffrée)
+### E. Supervision Opérationnelle en Direct (Back-Office)
 
-| Métrique / Comportement | Avant Correctifs | Après Correctifs (Mesuré en direct) | Gain Réel |
+![Supervision des métriques et des incidents dans le back-office](images/Capture%20d’écran%20du%202026-10-09%2013-26-08.png)
+
+> [!NOTE]
+> **Tableau de Bord Back-office (Capture ci-dessus) :**  
+> Visualisation consolidée en temps réel : 142 messages traités, 72 419 tokens cumulés, latence moyenne de 2,38 s, déclenchement du bandeau d'alerte et journal des incidents supervisés.
+
+---
+
+## 3. Matrice d'Impact Avant / Après (Synthèse Chiffrée & Mesures Réelles)
+
+Les tests comparatifs de charge et d'impact carbone ont été exécutés avec `load_test.py` et instrumentés via **CodeCarbon** et **Arize Phoenix** :
+
+| Métrique / Comportement | Avant Correctifs (*Baseline*) | Après Correctifs (*Post-Patch*) | Gain Réel Observé |
 | :--- | :---: | :---: | :---: |
-| **Question récurrente (ex. Horaires)** | ~1 600 tokens / 2,5 s | **0 token / 33 ms** | **-100 % de tokens (instantané)** |
+| **Temps moyen par message** | **5,60 s** / msg *(140s pour 25 msgs)* | **1,33 s** / msg *(13,3s pour 10 msgs)* | **⚡ 4,2× plus rapide (-76 % de latence)** |
+| **Empreinte carbone unitaire** | **1,0355 mg CO₂eq** / message | **0,9288 mg CO₂eq** / message | **🌱 -10,3 % de CO₂ émis par échange** |
+| **Question récurrente (FAQ Horaires)** | ~1 600 tokens / 2,5 s | **0 token / 1 ms à 33 ms** | **📉 -100 % de tokens (Cache Hit)** |
 | **Question simple (ex. Bonjour)** | Modèle 3B | **Modèle 1B (`llama3.2:1b`)** | **Empreinte mémoire divisée par 3** |
 | **Plafond max_tokens de sortie** | 1 500 tokens | **350 tokens** (242 mesurés) | **-76 % de charge maximale** |
-| **Croissance du contexte** | +109 % en 5 tours | **Plafonné à ~800-1 000 tokens** | **Stabilisation stricte** |
-| **Données nominatives dans le prompt** | Nom et email injectés | **Aucune PII transmise** | **Conformité RGPD garantie** |
+| **Croissance du contexte (historique)** | +109 % en 5 tours | **Plafonné à ~800-1 000 tokens** | **Stabilisation stricte de la mémoire** |
+| **Filtrage des allergènes (INCO)** | Injection brute du catalogue | **Filtrage déterministe Python** | **Sécurité sanitaire absolue + prompt allégé** |
+| **Données nominatives dans le prompt** | Nom et email injectés | **Aucune PII transmise** | **Conformité RGPD garantie (Art. 5.1.c)** |
 
 ---
 
 ## 4. Fichiers Modifiés & Traçabilité
 
-* `chatbot.py` : Fonctions `customer_context()`, `check_faq_or_cache()`, `choose_model()`, `handle_chat()`.
+* `chatbot.py` : Fonctions `customer_context()`, `check_faq_or_cache()`, `filter_catalog_by_allergies()`, `choose_model()`, `handle_chat()`.
+* `load_test.py` : Scénario de test de charge réaliste et mesure d'émissions CodeCarbon.
+* `data/summary_chocobot-postpatch.json` : Données consolidées de performance et d'énergie post-optimisation.
+
