@@ -17,6 +17,7 @@ Bienvenue dans la documentation technique et reglementaire du projet **ChocoBot*
 | **[Securite des Acces & RGPD](securite_et_conformite_rgpd.md)** | Authentification BasicAuth du back-office, droit a l'effacement et consentement Art. 9. |
 | **[Monitoring LLM avec Arize Phoenix](monitoring_arize_phoenix.md)** | Instrumentation OpenTelemetry, stockage des metriques et dashboard Phoenix. |
 | **[Empreinte Carbone avec CodeCarbon](empreinte_carbone_codecarbon.md)** | Mesure energetique, baseline d'emissions (CO2eq) et dashboard Carbonboard. |
+| **[Analyse Consommation, Coût & Carbone](analyse_consommation_cout_carbone.md)** | Bilan chiffré consolidé : tokens, coûts électriques et cloud évités, équivalents CO₂eq réels. |
 | **[Brief d'Audit Initial](RGPD.md)** | Perimetre et consignes initiales d'evaluation juridique. |
 
 ---
